@@ -50,9 +50,9 @@ def decode_id_move(id_move: int) -> tuple[int, int, int]:
 # toutes les données du jeu sont donc stockées dans 1 seul array numpy
 
 # Data Structure  - numpy array de taille 144 uint8 :
-# B[ 0- 63] List of possibles moves
+# B[0 - 63] List of possibles moves
 # B[64-127] Gameboard (x,y) => 64 + x + 8*y
-# B[-1] : number of possible moves
+# B[-1] : number of possible moves // game is over
 # B[-2] : reserved
 # B[-3] : current player
 
@@ -70,12 +70,11 @@ def ip_xy(coordinate_x: int, coordinate_y: int) -> int:
 
 
 @njit
-# analyse B => liste des coups possibles par ordre croissant
 def _possible_moves(player_id: int, board: np.ndarray) -> None:
     """
         update the board for the current player, to set his possible moves
         (player_id = 0 => vertical player, player_id = 1 => horizontal player)
-        update the total number of count
+        update the count of possible move
     """
     count: int = 0
 
@@ -157,15 +156,40 @@ def play(board: np.ndarray, id_move: int) -> None:
 
 
 @njit
-def playout(board: np.ndarray) -> None:
+def playout(board: np.ndarray, move_id: int) -> None:
     """
-        play a full game
+        play an entire game
     """
-    while board[-1] != 0:  # tant qu'il reste des coups possibles
-        id = random.randint(0, board[-1] - 1)  # select random move
-        id_move = board[id]
-        play(board, id_move)
+    while not terminated(board): # play the game
+        play_id = board[move_id]
+        play(board, play_id)
 
+@njit
+def ia100p(board: np.ndarray, trend_player_1: np.ndarray, trend_player_2: np.ndarray) -> None:
+    """
+        simulate 100 game per move for the two ia to get a trend for all the move
+        in this impl, each player (two ia) update their trend array
+
+        this function compute trend array for a generation
+    """
+    possible_moves_count: int = board[-1]
+    number_of_game: int = 100
+    # we play 100 game per possible move, and get the mean of all the score with that move
+    for move_id in range(0, possible_moves_count): # check all the possible move
+        scores: np.ndarray = np.zeros(number_of_game, dtype=np.int32)
+        for game in range(0, number_of_game): # playe 100 game per possible move
+            playout(board, move_id)
+            scores[game] = get_score(board) # update the score for the game that just ended
+        trend_player_1[move_id], trend_player_2[move_id] = scores.mean()
+
+
+@njit
+def pvp() -> None:
+    """
+        this function will handle battle between ia,
+        each new AI fight with the previous generation of AI.
+        this mean that we reset the trend tab for the loosing AI and keep it for the winning one
+    """
 
 ##################################################################
 #
@@ -209,7 +233,8 @@ def playout_debug(board: np.ndarray) -> None:
         id = random.randint(0, board[-1] - 1)
         id_move = board[id]
         player_id, coordinate_x, coordinate_y = decode_id_move(id_move)
-        print(f"Playing : {id_move} - Player: {player_id}  X: {coordinate_x}  Y: {coordinate_y}")
+        print(
+            f"Playing : {id_move} - Player: {player_id}  X: {coordinate_x}  Y: {coordinate_y}")
         play(board, id_move)
         custom_print(board)
         print("---------------------------------------")
@@ -236,7 +261,7 @@ def parrallel_playout(number: int):
 def numba_main() -> None:
     """
         main function for the numba playout
-        can play 100 000 game per second
+        can play at least 100 000 game per second
     """
 
     print("Test perf Numba")
@@ -253,7 +278,7 @@ def numba_main() -> None:
 def numba_parra_main() -> None:
     """
         main function for the parra of for the numba playout
-        can play 300 000 game per second
+        can play at least 300 000 game per second
     """
     print("Test perf Numba + parallélisme")
 
@@ -263,7 +288,7 @@ def numba_parra_main() -> None:
     T1 = time.time()
     dt = T1 - T0
 
-    print("Nb Sims / second:, {int(nbSimus / dt)}")
+    print(f"Nb Sims / second:, {int(number_of_simulations / dt)}")
 
 
 def main() -> None:

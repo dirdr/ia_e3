@@ -263,7 +263,7 @@ def numba_parra_main() -> None:
     T1 = time.time()
     dt = T1 - T0
 
-    print("Nb Sims / second:, {int(nbSimus / dt)}")
+    print(f"Nb Sims / second:, {int(number_of_simulations / dt)}")
 
 
 def main() -> None:
