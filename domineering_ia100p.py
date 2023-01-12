@@ -23,8 +23,8 @@ from numba import njit
 @njit
 def get_id_move(player_id: int, coordinate_x: int, coordinate_y: int) -> int:
     """
-        Take the player ID (0 for the vertical player, 1 for the horizontal player)
-        and return the encoded move id at (coordinate_x, coordinate_y)
+    Take the player ID (0 for the vertical player, 1 for the horizontal player)
+    and return the encoded move id at (coordinate_x, coordinate_y)
     """
     return player_id * 100 + coordinate_x * 10 + coordinate_y
 
@@ -32,10 +32,10 @@ def get_id_move(player_id: int, coordinate_x: int, coordinate_y: int) -> int:
 @njit
 def decode_id_move(id_move: int) -> tuple[int, int, int]:
     """
-        Take a move id and decode it
-        return:
-            the player that have played it (0 for the vertical player, 1 for the horizontal player),
-            the move coordinate (x and y)
+    Take a move id and decode it
+    return:
+        the player that have played it (0 for the vertical player, 1 for the horizontal player),
+        the move coordinate (x and y)
     """
     coordinate_y: int = id_move % 10
     coordinate_x: int = int(id_move / 10) % 10
@@ -63,8 +63,8 @@ starting_board = np.zeros(144, dtype=np.uint8)
 @njit
 def ip_xy(coordinate_x: int, coordinate_y: int) -> int:
     """
-        convert (x, y) coordinate into array index
-        return board indice of encoded coordinate
+    convert (x, y) coordinate into array index
+    return board indice of encoded coordinate
     """
     return 64 + 8 * coordinate_y + coordinate_x
 
@@ -72,9 +72,9 @@ def ip_xy(coordinate_x: int, coordinate_y: int) -> int:
 @njit
 def _possible_moves(player_id: int, board: np.ndarray) -> None:
     """
-        update the board for the current player, to set his possible moves
-        (player_id = 0 => vertical player, player_id = 1 => horizontal player)
-        update the count of possible move
+    update the board for the current player, to set his possible moves
+    (player_id = 0 => vertical player, player_id = 1 => horizontal player)
+    update the count of possible move
     """
     count: int = 0
 
@@ -113,8 +113,8 @@ _possible_moves(0, starting_board)  # prépare le gameboard de démarrage
 @njit
 def terminated(board: np.ndarray) -> bool:
     """
-        return true if the game is over
-        else false
+    return true if the game is over
+    else false
     """
     return board[-1] == 0
 
@@ -122,7 +122,7 @@ def terminated(board: np.ndarray) -> bool:
 @njit
 def get_score(board: np.ndarray) -> int:
     """
-        return the current game winner
+    return the current game winner
     """
     if board[-2] == 10:
         return 1
@@ -134,8 +134,8 @@ def get_score(board: np.ndarray) -> int:
 @njit
 def play(board: np.ndarray, id_move: int) -> None:
     """
-        play one turn of the game
-        id_move can be decoded to find the player, and the coordinate of the move
+    play one turn of the game
+    id_move can be decoded to find the player, and the coordinate of the move
     """
     player, coordinate_x, coordinate_y = decode_id_move(id_move)
     player_id: int = ip_xy(coordinate_x, coordinate_y)
@@ -158,48 +158,64 @@ def play(board: np.ndarray, id_move: int) -> None:
 @njit
 def playout(board: np.ndarray, move_id: int) -> None:
     """
-        play an entire game
+    play an entire game
     """
-    while not terminated(board): # play the game
+    while not terminated(board):  # play the game
         play_id = board[move_id]
         play(board, play_id)
 
-@njit
-def ia100p(board: np.ndarray, trend_player_1: np.ndarray, trend_player_2: np.ndarray) -> None:
-    """
-        simulate 100 game per move for the two ia to get a trend for all the move
-        in this impl, each player (two ia) update their trend array
 
-        this function compute trend array for a generation
+@njit
+def playout_random(board: np.ndarray) -> None:
+    """
+    play an entire game with random move
+    """
+    while not terminated(board):
+        move_id = random.randint(0, board[-1] - 1)
+        play_id = board[move_id]
+        play(board, play_id)
+
+
+def pvp() -> int:
+    """
+    play a full match between two ia
+    """
+    board: np.ndarray = np.zeros(144, dtype=np.uint8)
+    while not terminated(board):
+        best_move: int = ia100p(board.copy())
+        play(board, best_move)
+
+
+@njit
+def ia100p(board: np.ndarray) -> int:
+    """
+    simulate 100 game per move for the two ia to chose the best move
+    return the best move to play for the current ia
     """
     possible_moves_count: int = board[-1]
     number_of_game: int = 100
+    means = np.zeros(possible_moves_count, dtype=np.uint8)
     # we play 100 game per possible move, and get the mean of all the score with that move
-    for move_id in range(0, possible_moves_count): # check all the possible move
+    for move_id in range(0, possible_moves_count):  # check all the possible move
         scores: np.ndarray = np.zeros(number_of_game, dtype=np.int32)
-        for game in range(0, number_of_game): # playe 100 game per possible move
-            playout(board, move_id)
-            scores[game] = get_score(board) # update the score for the game that just ended
-        trend_player_1[move_id], trend_player_2[move_id] = scores.mean()
+        copied: np.ndarray = (
+            board.copy()
+        )  # create a copy of the current board to simulate the game
+        play(copied, move_id)
+        for game in range(0, number_of_game):  # playe 100 game per possible move
+            playout(copied, random.randint(0, possible_moves_count - 1))
+            scores[game] = get_score(
+                copied
+            )  # update the score for the game that just ended
+        means[move_id] = scores.mean()
+    return int(np.argmax(means))
 
 
-@njit
-def pvp() -> None:
-    """
-        this function will handle battle between ia,
-        each new AI fight with the previous generation of AI.
-        this mean that we reset the trend tab for the loosing AI and keep it for the winning one
-    """
-
-##################################################################
-#
 #   for demo only - do not use for computation
-
-
 def custom_print(board: np.ndarray) -> None:
     """
-        custom print function to print the board
-        represented as a numpy nd array
+    custom print function to print the board
+    represented as a numpy nd array
     """
     print(board)
     for yy in range(8):
@@ -226,7 +242,7 @@ def custom_print(board: np.ndarray) -> None:
 
 def playout_debug(board: np.ndarray) -> None:
     """
-        play a full game in debugging mode
+    play a full game in debugging mode
     """
     custom_print(board)
     while not terminated(board):
@@ -234,7 +250,8 @@ def playout_debug(board: np.ndarray) -> None:
         id_move = board[id]
         player_id, coordinate_x, coordinate_y = decode_id_move(id_move)
         print(
-            f"Playing : {id_move} - Player: {player_id}  X: {coordinate_x}  Y: {coordinate_y}")
+            f"Playing : {id_move} - Player: {player_id}  X: {coordinate_x}  Y: {coordinate_y}"
+        )
         play(board, id_move)
         custom_print(board)
         print("---------------------------------------")
@@ -248,7 +265,7 @@ def playout_debug(board: np.ndarray) -> None:
 @njit(parallel=True)
 def parrallel_playout(number: int):
     """
-        play a full game in parra mode with numba
+    play a full game in parra mode with numba
     """
     scores = np.empty(number)
     for i in numba.prange(number):
@@ -260,8 +277,8 @@ def parrallel_playout(number: int):
 
 def numba_main() -> None:
     """
-        main function for the numba playout
-        can play at least 100 000 game per second
+    main function for the numba playout
+    can play at least 100 000 game per second
     """
 
     print("Test perf Numba")
@@ -277,8 +294,8 @@ def numba_main() -> None:
 
 def numba_parra_main() -> None:
     """
-        main function for the parra of for the numba playout
-        can play at least 300 000 game per second
+    main function for the parra of for the numba playout
+    can play at least 300 000 game per second
     """
     print("Test perf Numba + parallélisme")
 
@@ -293,7 +310,7 @@ def numba_parra_main() -> None:
 
 def main() -> None:
     """
-        main function for our programm
+    main function for our programm
     """
     numba_main()
     numba_parra_main()
