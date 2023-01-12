@@ -176,24 +176,45 @@ def playout_random(board: np.ndarray) -> None:
         play(board, play_id)
 
 
-def pvp() -> int:
+@njit
+def pvp_one_match(ia_1_played_move: np.ndarray, ia_2_played_move: np.ndarray, number_of_game: int) -> int:
     """
     play a full match between two ia
     """
-    board: np.ndarray = np.zeros(144, dtype=np.uint8)
+    board: np.ndarray = starting_board.copy()
     while not terminated(board):
-        best_move: int = ia100p(board.copy())
+        best_move: int = n_game_sim(board, number_of_game)
         play(board, best_move)
+    return get_score(board)
 
 
 @njit
-def ia100p(board: np.ndarray) -> int:
+def pvp_multiple_match(number_of_game: int) -> np.ndarray:
+    """
+        play 'number of game' game between two ia
+        return a ndarray where arr[i] = Player_i number of win, i ∈ {0, 1}
+    """
+    ia_1_played_move: np.ndarray = np.zeros(64)
+    ia_2_played_move: np.ndarray = np.zeros(64)
+    win_count: np.ndarray = np.zeros(2)
+    for _ in range(number_of_game):
+        winner: int = pvp_one_match(
+            ia_1_played_move, ia_2_played_move, number_of_game
+        )
+        if winner == 1:
+            win_count[0] += 1
+        else:
+            win_count[1] += 1
+    return win_count
+
+
+@njit
+def n_game_sim(board: np.ndarray, number_of_game: int) -> int:
     """
     simulate 100 game per move for the two ia to chose the best move
     return the best move to play for the current ia
     """
     possible_moves_count: int = board[-1]
-    number_of_game: int = 100
     means = np.zeros(possible_moves_count, dtype=np.uint8)
     # we play 100 game per possible move, and get the mean of all the score with that move
     for move_id in range(0, possible_moves_count):  # check all the possible move
@@ -270,7 +291,7 @@ def parrallel_playout(number: int):
     scores = np.empty(number)
     for i in numba.prange(number):
         board = starting_board.copy()
-        playout(board)
+        playout_random(board)
         scores[i] = get_score(board)
     return scores.mean()
 
@@ -287,7 +308,7 @@ def numba_main() -> None:
     number_of_simulations = 0
     while time.time() - T0 < 2:
         board = starting_board.copy()
-        playout(board)
+        playout_random(board)
         number_of_simulations += 1
     print(f"Nb Sims / second: {number_of_simulations / 2}")
 
@@ -307,13 +328,18 @@ def numba_parra_main() -> None:
 
     print(f"Nb Sims / second:, {int(number_of_simulations / dt)}")
 
+def main_pvp() -> None:
+    """
+    main function for ia vs ia matchs
+    """
+    pvp_multiple_match(100)
+
 
 def main() -> None:
     """
     main function for our programm
     """
-    numba_main()
-    numba_parra_main()
+    main_pvp()
 
 
 if __name__ == "__main__":
