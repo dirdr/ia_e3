@@ -217,21 +217,23 @@ def n_game_sim(board: np.ndarray, number_of_game: int) -> int:
     return the best move to play for the current ia
     """
     possible_moves_count: int = board[-1]
-    means = np.empty(possible_moves_count, dtype=np.uint8)
+    means = np.zeros(possible_moves_count, dtype=np.uint8)
     # we play 100 game per possible move, and get the mean of all the score with that move
     for move_id in range(0, possible_moves_count):  # check all the possible move
         scores: np.ndarray = np.zeros(number_of_game, dtype=np.int32)
-        copied: np.ndarray = (
-            board.copy()
-        )  # create a copy of the current board to simulate the game
-        play_id = copied[move_id]
-        play(copied, play_id)
         for game in range(0, number_of_game):  # playe 100 game per possible move
-            playout_random(copied)
+            copied: np.ndarray = (
+                board.copy()
+            )  # create a copy of the current board to simulate the game
+            play_id = copied[move_id]  # get the move id
+            play(copied, play_id)  # play the move
+            playout_random(copied)  # simulate a full game with the move played
             scores[game] = get_score(
                 copied
             )  # update the score for the game that just ended
         means[move_id] = scores.mean()
+    if board[-3] == 1:
+        return int(np.argmin(means))
     return int(np.argmax(means))
 
 
@@ -336,7 +338,7 @@ def main_pvp() -> None:
     """
     main function for ia vs ia matchs
     """
-    number_of_game: int = 100
+    number_of_game: int = 10
     score: np.ndarray = pvp_multiple_match(number_of_game)
     print(
         f"{(score[0] / number_of_game) * 100}% Win IA 1 - {(score[1] / number_of_game) * 100}% Win IA 2"
