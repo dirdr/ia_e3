@@ -10,8 +10,8 @@ from numba import njit
 # PLayer 0 => Vertical    Player
 # PLayer 1 => Horizontal  Player
 
-# id_move : code servant à identifier un coup particulier sur le jeu
 # player_id   : id player 0/1
+
 # x,y : coordonnées de la tuile, Player0 joue sur (x,y)+(x,y+1) et Player1 sur (x,y)+(x+1,y)
 
 # convert: player,x,y <=> IDmove
@@ -137,7 +137,7 @@ def play(board: np.ndarray, id_move: int) -> None:
     play one turn of the game
     id_move can be decoded to find the player, and the coordinate of the move
     """
-    player, coordinate_x, coordinate_y = decode_id_move(id_move)
+    player, coordinate_x, coordinate_y = decode_id_move(int(id_move))
     player_id: int = ip_xy(coordinate_x, coordinate_y)
 
     board[player_id] = 1
@@ -177,30 +177,32 @@ def playout_random(board: np.ndarray) -> None:
 
 
 @njit
-def pvp_one_match(ia_1_played_move: np.ndarray, ia_2_played_move: np.ndarray, number_of_game: int) -> int:
+def pvp_one_match(
+    ia_1_played_move: np.ndarray, ia_2_played_move: np.ndarray, number_of_game: int
+) -> int:
     """
     play a full match between two ia
     """
     board: np.ndarray = starting_board.copy()
     while not terminated(board):
         best_move: int = n_game_sim(board, number_of_game)
-        play(board, best_move)
+        play_id = board[best_move]
+        play(board, play_id)
     return get_score(board)
 
 
 @njit
 def pvp_multiple_match(number_of_game: int) -> np.ndarray:
     """
-        play 'number of game' game between two ia
-        return a ndarray where arr[i] = Player_i number of win, i ∈ {0, 1}
+    play 'number of game' game between two ia
+    return a ndarray where arr[i] = Player_i number of win, i ∈ {0, 1}
     """
     ia_1_played_move: np.ndarray = np.zeros(64)
     ia_2_played_move: np.ndarray = np.zeros(64)
     win_count: np.ndarray = np.zeros(2)
     for _ in range(number_of_game):
         winner: int = pvp_one_match(
-            ia_1_played_move, ia_2_played_move, number_of_game
-        )
+            ia_1_played_move, ia_2_played_move, number_of_game)
         if winner == 1:
             win_count[0] += 1
         else:
@@ -211,20 +213,21 @@ def pvp_multiple_match(number_of_game: int) -> np.ndarray:
 @njit
 def n_game_sim(board: np.ndarray, number_of_game: int) -> int:
     """
-    simulate 100 game per move for the two ia to chose the best move
+    simulate 'number_of_game' game per move for the two ia to chose the best move
     return the best move to play for the current ia
     """
     possible_moves_count: int = board[-1]
-    means = np.zeros(possible_moves_count, dtype=np.uint8)
+    means = np.empty(possible_moves_count, dtype=np.uint8)
     # we play 100 game per possible move, and get the mean of all the score with that move
     for move_id in range(0, possible_moves_count):  # check all the possible move
         scores: np.ndarray = np.zeros(number_of_game, dtype=np.int32)
         copied: np.ndarray = (
             board.copy()
         )  # create a copy of the current board to simulate the game
-        play(copied, move_id)
+        play_id = copied[move_id]
+        play(copied, play_id)
         for game in range(0, number_of_game):  # playe 100 game per possible move
-            playout(copied, random.randint(0, possible_moves_count - 1))
+            playout_random(copied)
             scores[game] = get_score(
                 copied
             )  # update the score for the game that just ended
@@ -326,13 +329,18 @@ def numba_parra_main() -> None:
     T1 = time.time()
     dt = T1 - T0
 
-    print(f"Nb Sims / second:, {int(number_of_simulations / dt)}")
+    print(f"Nb Sims / second:, {(number_of_simulations / dt)}")
+
 
 def main_pvp() -> None:
     """
     main function for ia vs ia matchs
     """
-    pvp_multiple_match(100)
+    number_of_game: int = 100
+    score: np.ndarray = pvp_multiple_match(number_of_game)
+    print(
+        f"{(score[0] / number_of_game) * 100}% Win IA 1 - {(score[1] / number_of_game) * 100}% Win IA 2"
+    )
 
 
 def main() -> None:
