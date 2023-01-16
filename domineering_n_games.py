@@ -1,9 +1,8 @@
 import random
 import time
-from numba.np.ufunc import parallel
 import numpy as np
 import numba
-from numba import njit
+from numba import njit, prange
 
 ###################################################################
 
@@ -137,7 +136,7 @@ def play(board: np.ndarray, id_move: int) -> None:
     play one turn of the game
     id_move can be decoded to find the player, and the coordinate of the move
     """
-    player, coordinate_x, coordinate_y = decode_id_move(int(id_move))
+    player, coordinate_x, coordinate_y = decode_id_move(id_move)
     player_id: int = ip_xy(coordinate_x, coordinate_y)
 
     board[player_id] = 1
@@ -161,7 +160,7 @@ def playout(board: np.ndarray, move_id: int) -> None:
     play an entire game
     """
     while not terminated(board):  # play the game
-        play_id = board[move_id]
+        play_id: int = board[move_id]
         play(board, play_id)
 
 
@@ -171,38 +170,40 @@ def playout_random(board: np.ndarray) -> None:
     play an entire game with random move
     """
     while not terminated(board):
-        move_id = random.randint(0, board[-1] - 1)
-        play_id = board[move_id]
+        move_id: int = random.randint(0, board[-1] - 1)
+        play_id: int = board[move_id]
         play(board, play_id)
 
 
 @njit
-def pvp_one_match(
-    ia_1_played_move: np.ndarray, ia_2_played_move: np.ndarray, number_of_game: int
-) -> int:
+def pvp_one_match(nog_player_0: int, nog_player_1: int, p=False) -> int:
     """
     play a full match between two ia
+    depending on the current player, change simulation parameters
     """
     board: np.ndarray = starting_board.copy()
     while not terminated(board):
-        best_move: int = n_game_sim(board, number_of_game)
-        play_id = board[best_move]
+        if board[-3] == 0:
+            nog: int = nog_player_0
+        else:
+            nog: int = nog_player_1
+        best_move: int = find_best_move(board, nog, p)
+        play_id: int = board[best_move]
         play(board, play_id)
     return get_score(board)
 
 
 @njit
-def pvp_multiple_match(number_of_game: int) -> np.ndarray:
+def pvp_multiple_match(
+    number_of_game: int, nog_player_0: int, nog_player_1: int, p=False
+) -> np.ndarray:
     """
     play 'number of game' game between two ia
     return a ndarray where arr[i] = Player_i number of win, i ∈ {0, 1}
     """
-    ia_1_played_move: np.ndarray = np.zeros(64)
-    ia_2_played_move: np.ndarray = np.zeros(64)
     win_count: np.ndarray = np.zeros(2)
     for _ in range(number_of_game):
-        winner: int = pvp_one_match(
-            ia_1_played_move, ia_2_played_move, number_of_game)
+        winner: int = pvp_one_match(nog_player_0, nog_player_1, p=p)
         if winner == 1:
             win_count[0] += 1
         else:
@@ -211,28 +212,39 @@ def pvp_multiple_match(number_of_game: int) -> np.ndarray:
 
 
 @njit
-def n_game_sim(board: np.ndarray, number_of_game: int) -> int:
+def simulate_random_game(board: np.ndarray, move_id: int) -> np.ndarray:
+    copied: np.ndarray = board.copy()
+    play_id: int = copied[move_id]
+    play(copied, play_id)
+    playout_random(copied)
+    return copied
+
+
+@njit(parallel=True)
+def find_best_move(board: np.ndarray, number_of_game: int, p=False) -> int:
     """
     simulate 'number_of_game' game per move for the two ia to chose the best move
     return the best move to play for the current ia
     """
     possible_moves_count: int = board[-1]
-    means = np.zeros(possible_moves_count, dtype=np.uint8)
-    # we play 100 game per possible move, and get the mean of all the score with that move
+    means: np.ndarray = np.zeros(possible_moves_count, dtype=np.float64)
+    current_player: int = board[-3]
     for move_id in range(0, possible_moves_count):  # check all the possible move
         scores: np.ndarray = np.zeros(number_of_game, dtype=np.int32)
-        for game in range(0, number_of_game):  # playe 100 game per possible move
-            copied: np.ndarray = (
-                board.copy()
-            )  # create a copy of the current board to simulate the game
-            play_id = copied[move_id]  # get the move id
-            play(copied, play_id)  # play the move
-            playout_random(copied)  # simulate a full game with the move played
-            scores[game] = get_score(
-                copied
-            )  # update the score for the game that just ended
+        if p == True:
+            for game in prange(0, number_of_game):
+                copied: np.ndarray = simulate_random_game(board, number_of_game)
+                scores[game] = get_score(
+                    copied
+                )  # update the score for the game that just ended
+        else:
+            for game in range(0, number_of_game):
+                copied: np.ndarray = simulate_random_game(board, number_of_game)
+                scores[game] = get_score(
+                    copied
+                )  # update the score for the game that just ended
         means[move_id] = scores.mean()
-    if board[-3] == 1:
+    if current_player == 1:
         return int(np.argmin(means))
     return int(np.argmax(means))
 
@@ -339,10 +351,25 @@ def main_pvp() -> None:
     main function for ia vs ia matchs
     """
     number_of_game: int = 10
-    score: np.ndarray = pvp_multiple_match(number_of_game)
-    print(
-        f"{(score[0] / number_of_game) * 100}% Win IA 1 - {(score[1] / number_of_game) * 100}% Win IA 2"
+    ia100p: int = 100
+    ia1000p: int = 1000
+    ia10000p: int = 10000
+    score_100_100: np.ndarray = pvp_multiple_match(
+        number_of_game, nog_player_0=ia100p, nog_player_1=ia100p
     )
+    score_100_1000: np.ndarray = pvp_multiple_match(
+        number_of_game, nog_player_0=ia100p, nog_player_1=ia1000p, p=True
+    )
+    score_100_10000: np.ndarray = pvp_multiple_match(
+        number_of_game, nog_player_0=ia100p, nog_player_1=ia10000p
+    )
+    print(get_score_string(score_100_100, number_of_game))
+    print(get_score_string(score_100_1000, number_of_game))
+    print(get_score_string(score_100_10000, number_of_game))
+
+
+def get_score_string(score: np.ndarray, number_of_game: int) -> str:
+    return f"{(score[0] / number_of_game) * 100}% Win IA 1 - {(score[1] / number_of_game) * 100}% Win IA 2"
 
 
 def main() -> None:
