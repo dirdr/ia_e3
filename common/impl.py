@@ -17,9 +17,6 @@ Player 1 win => score : -1
 """
 
 
-STARTING_BOARD: np.ndarray = np.zeros(144, dtype=np.uint8)
-
-
 @njit
 def to_board_index(x_coordinate: int, y_coordinate: int) -> int:
     """
@@ -41,7 +38,10 @@ def decode_play_id(play_id: int) -> tuple[int, int, int]:
     decode an encoded play_id,
     return a tuple [player_id, x_coordinate, y_coordinate]
     """
-    return int(play_id / 100), (int(play_id / 10) % 10), play_id % 10
+    player_id: int = int(play_id / 100)
+    x_coordinate: int = int(play_id / 10) % 10
+    y_coordinate: int = play_id % 10
+    return (player_id, x_coordinate, y_coordinate)
 
 
 @njit
@@ -79,14 +79,14 @@ def _update_possible_moves(board: np.ndarray, player_id: int) -> None:
         y = 7
         offset = 8
     else:
-        x = 8
-        y = 7
+        x = 7
+        y = 8
         offset = 1
-    for x in range(x):
-        for y in range(y):
-            move_id = to_board_index(x, y)
+    for x_indice in range(x):
+        for y_indice in range(y):
+            move_id = to_board_index(x_indice, y_indice)
             if board[move_id] == 0 and board[move_id + offset] == 0:
-                board[count] = encode_play_id(player_id, x, y)
+                board[count] = encode_play_id(player_id, x_indice, y_indice)
                 count += 1
     board[-1] = count
 

@@ -6,18 +6,16 @@ def main_pvp() -> None:
     main function for ia vs ia matchs
     """
     number_of_game: int = 10
-    ia100p: int = 100
-    ia1000p: int = 1000
-    ia10000p: int = 10000
     score_100_100: np.ndarray = pvp_multiple_match(
-        number_of_game, nog_player_0=ia100p, nog_player_1=ia100p
+        number_of_game, nog_player_0=100, nog_player_1=100
     )
     score_100_1000: np.ndarray = pvp_multiple_match(
-        number_of_game, nog_player_0=ia100p, nog_player_1=ia1000p, p=True
+        number_of_game, nog_player_0=100, nog_player_1=1000
     )
     score_100_10000: np.ndarray = pvp_multiple_match(
-        number_of_game, nog_player_0=ia100p, nog_player_1=ia10000p
+        number_of_game, nog_player_0=1000, nog_player_1=10000, p=True
     )
+    print(score_100_100)
     print(get_score_pretty_string(score_100_100, number_of_game))
     print(get_score_pretty_string(score_100_1000, number_of_game))
     print(get_score_pretty_string(score_100_10000, number_of_game))

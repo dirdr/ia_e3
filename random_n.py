@@ -2,13 +2,16 @@ import numpy as np
 from numba import njit, prange
 from common import impl as common
 
+STARTING_BOARD = np.zeros(144, dtype=np.uint8)
+common._update_possible_moves(STARTING_BOARD, 0)
+
 @njit
 def pvp_one_match(nog_player_0: int, nog_player_1: int, p=False) -> int:
     """
     play a full match between two ia
     depending on the current player, change simulation parameters
     """
-    board: np.ndarray = common.STARTING_BOARD.copy()
+    board: np.ndarray = STARTING_BOARD.copy()
     while not common.is_over(board):
         if board[-3] == 0:
             nog: int = nog_player_0
