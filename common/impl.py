@@ -1,6 +1,6 @@
+import random
 import numpy as np
 from numba import njit
-import random
 
 """
 every game data are stored inside 1 numpy array
