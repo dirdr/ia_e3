@@ -24,7 +24,8 @@ $L$ is a leaf node (a node with no known children so far)
 #### Steps
 The Monte carlo tree search algorithm can be broken down into 4 steps :
 - **Selection**  
-Algorithm starts at root node $R$, then moves down the tree by selecting optimal child (using UCT formula)
+Algorithm starts at root node $R$, then moves down the tree by selecting optimal child
+(using UCT formula)
 node until a leaf node $L$  is reached.
 
 - **Expansion**  

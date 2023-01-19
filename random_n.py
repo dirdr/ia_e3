@@ -5,6 +5,7 @@ from common import impl as common
 STARTING_BOARD = np.zeros(144, dtype=np.uint8)
 common._update_possible_moves(STARTING_BOARD, 0)
 
+
 @njit
 def pvp_one_match(nog_player_0: int, nog_player_1: int, p=False) -> int:
     """
