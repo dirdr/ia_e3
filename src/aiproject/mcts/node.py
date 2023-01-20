@@ -23,14 +23,24 @@ class Node:
         self.board = board
         self.childrens = []
         self.parent = parent
-        self.n = 0
+        self._n = 0
         self._result = defaultdict(int) # store the number of win and lose 
-        self.untried_action = []
+        self._untried_action = None
 
     @property
     def x_value(self) -> int:
         "return the mean of all game that passed through this node"
         return 0
+
+    @property
+    def n(self):
+        return self._n
+
+    @property
+    def untried_action(self):
+        if self._untried_action is None:
+            self._untried_action = common.get_legal_actions(self.board)
+        return self._untried_action
 
     def is_terminal(self) -> bool:
         """
@@ -73,14 +83,20 @@ class Node:
         return self.childrens[np.argmax(weights)]
 
     def simulate(self) -> int:
-        return 0
+        """
+        simulate a game from the current node (self) 
+        the gme will be played with a random policy
+        """
+        simulation_board = self.board.copy()
+        common.play_full_game_random(simulation_board)
+        return common.get_winner(simulation_board)
 
     def backpropagate(self, result: int) -> None:
         """
         backpropagate the result (comming from a simulation) to the current node and its parent
         updating the number of time the node has been visited and the result.
         """
-        self.n += 1
+        self._n += 1
         self._result[result] += 1
         if self.parent:
             self.parent.backpropagate(result)

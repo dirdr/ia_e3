@@ -130,3 +130,14 @@ def play_full_game_random(board: np.ndarray) -> None:
         move_id: int = random.randint(0, board[-1] - 1)
         play_id: int = board[move_id]
         play_one_turn(board, play_id)
+
+
+def get_legal_actions(board: np.ndarray) -> list[int]:
+    """
+    return a list of all possibles move for the current node state
+    """
+    result = []
+    possible_moves_count: int = board[-1]
+    for i in range(0, possible_moves_count):
+        result.append(board[i])
+    return result
