@@ -1,5 +1,5 @@
 import numpy as np
-from random_n import pvp_multiple_match, get_score_pretty_string
+from aiproject.mc.random_n import pvp_multiple_match, get_score_pretty_string
 
 
 def main_pvp() -> None:
