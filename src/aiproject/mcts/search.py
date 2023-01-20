@@ -17,22 +17,24 @@ class Search:
         @param simulation_number -> number of rollout to go for before choosing the best child
         """
         for _ in range(0, simulation_number):
-            pass
+            to_simulate: Node = self._selection()
+            simulation_result = to_simulate.simulate()
+            to_simulate.backpropagate(simulation_result)
         return 0
 
-    def selection(self):
-        """
-        start at ̀`self.root` and move down the tree until a leaf Node is found
-        by traversing the tree:
-            if the selected node is new: 
-                make a rollout (simulation)
-            if the selected node has been visited:
-                fully expand that node with avaible actions,
-                take the first new child and rollout from here
-        """
 
-    def tree_policy(self) -> None:
+    def _selection(self) -> Node:
         """
-        the tree policy is 
+        the mcts selection (tree policy) describe how the algorithm should traverse the tree.
+            - traversing through the best child until a non fully expanded child is found  
+            if a leaf (or a non fully expanded node) is found, expand it by one child
+        the tree policy will return the node to simulate:
+            either the child resulting from the expansion of a node, or if the root is now a terminal node
         """
-
+        current_node: Node = self.root
+        while not current_node.is_terminal():
+            if current_node.can_expand():
+                return current_node.expand()
+            else:
+                current_node = current_node.find_best_child()
+        return current_node

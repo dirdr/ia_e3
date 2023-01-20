@@ -43,8 +43,6 @@ After the simulation phase, a result is returned.
 All nodes from $M$ up to $R$ will be updated by adding the result to their value
 and increase the count of visits at each node.
 
-[article that describe these steps](https://towardsdatascience.com/monte-carlo-tree-search-in-reinforcement-learning-b97d3e743d0f)
-
 #### UCT
 The **Upper confidence Trees** (UCT) formula
 $$
@@ -56,3 +54,7 @@ In our case
 - $n_i$ is the number of simulation that passed through this node
 - $c$ is a a coefficient that allows us to adjust the balance between exploration and exploitation 
 - $n$ number of simulation passed by the parent node
+
+### References
+[article that describe mcts steps](https://towardsdatascience.com/monte-carlo-tree-search-in-reinforcement-learning-b97d3e743d0f)
+[MCTS-Survey](http://www.incompleteideas.net/609%20dropbox/other%20readings%20and%20resources/MCTS-survey.pdf)

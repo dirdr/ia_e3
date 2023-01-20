@@ -24,7 +24,7 @@ class Node:
         self.childrens = []
         self.parent = parent
         self.n = 0
-        self._result = defaultdict(int)
+        self._result = defaultdict(int) # store the number of win and lose 
         self.untried_action = []
 
     @property
@@ -39,6 +39,12 @@ class Node:
         """
         return common.is_over(self.board)
 
+    def can_expand(self) -> bool:
+        """
+
+        """
+        return len(self.untried_action) == 0
+
     def expand(self) -> Self:
         """
         expand self by one node
@@ -52,7 +58,7 @@ class Node:
         self.childrens.append(children)
         return children
 
-    def find_best_child_node(self, c: Optional[float] = 0.2) -> Self:
+    def find_best_child(self, c: Optional[float] = 0.2) -> Self:
         """
         find and return the best child node according to the UCT formula
 
@@ -70,4 +76,11 @@ class Node:
         return 0
 
     def backpropagate(self, result: int) -> None:
+        """
+        backpropagate the result (comming from a simulation) to the current node and its parent
+        updating the number of time the node has been visited and the result.
+        """
         self.n += 1
+        self._result[result] += 1
+        if self.parent:
+            self.parent.backpropagate(result)
