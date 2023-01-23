@@ -51,7 +51,7 @@ class Node:
 
     def can_expand(self) -> bool:
         """
-
+            return true if the current node can have child s_i by consuming a_i
         """
         return len(self.untried_action) == 0
 
@@ -74,10 +74,15 @@ class Node:
 
         @param c -> the balance factor, the value is set by default as 0.2
         """
-        weights: list[float] = []
+        weights: list[float] = [] 
+        modifier: int = 0
+        if self.board[-3] == 0:
+            modifier = 1
+        else:   
+            modifier = -1
         for children in self.childrens:
             weights.append(
-                (children.x_value / children.n)
+                modifier * (children.x_value / children.n)
                 + c * np.sqrt((np.log(self.n) / children.n))
             )
         return self.childrens[np.argmax(weights)]

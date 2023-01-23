@@ -13,13 +13,9 @@ def main_pvp() -> None:
     score_100_1000: np.ndarray = pvp_multiple_match(
         number_of_game, nog_player_0=100, nog_player_1=1000
     )
-    score_100_10000: np.ndarray = pvp_multiple_match(
-        number_of_game, nog_player_0=1000, nog_player_1=10000, p=True
-    )
     print(score_100_100)
     print(get_score_pretty_string(score_100_100, number_of_game))
     print(get_score_pretty_string(score_100_1000, number_of_game))
-    print(get_score_pretty_string(score_100_10000, number_of_game))
 
 
 def main() -> None:
