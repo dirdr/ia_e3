@@ -1,23 +1,15 @@
 from aiproject.mcts.search import Search
 from typing import Self
 
-class AiVsAi:
+
+class Battle:
     """
-    this class is an interface to make battle between different IA
+    the battle class is an interface for making battle between Ai:
+        Monte carlo and Monte carlo tree search
     """
 
-    def __init__(self) -> None:
+    def __init__(self, number_of_match: int=10, ai_1: str, ai_2: str) -> None:
+        self.number_of_match = number_of_match
+
+    def initialize_ai(self) -> None:
         pass
-
-
-class BattleBuilder:
-    """
-    helper class to create a battle between two AI
-    """
-        
-    def __init__(self) -> None:
-        pass
-
-    def addAi() -> Self:
-        pass
-
