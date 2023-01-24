@@ -7,42 +7,6 @@ common._update_possible_moves(STARTING_BOARD, 0)
 
 
 @njit
-def pvp_one_match(nog_player_0: int, nog_player_1: int, p=False) -> int:
-    """
-    play a full match between two ia
-    depending on the current player, change simulation parameters
-    """
-    board: np.ndarray = STARTING_BOARD.copy()
-    while not common.is_over(board):
-        if board[-3] == 0:
-            nog: int = nog_player_0
-        else:
-            nog: int = nog_player_1
-        best_move: int = find_best_move(board, nog, p)
-        play_id: int = board[best_move]
-        common.play_one_turn(board, play_id)
-    return common.get_winner(board)
-
-
-@njit
-def pvp_multiple_match(
-    number_of_game: int, nog_player_0: int, nog_player_1: int, p=False
-) -> np.ndarray:
-    """
-    play 'number of game' game between two ia
-    return a ndarray where arr[i] = Player_i number of win, i ∈ {0, 1}
-    """
-    win_count: np.ndarray = np.zeros(2)
-    for _ in range(number_of_game):
-        winner: int = pvp_one_match(nog_player_0, nog_player_1, p=p)
-        if winner == 1:
-            win_count[0] += 1
-        else:
-            win_count[1] += 1
-    return win_count
-
-
-@njit
 def simulate_random_game(board: np.ndarray, move_id: int) -> np.ndarray:
     copied: np.ndarray = board.copy()
     play_id: int = copied[move_id]

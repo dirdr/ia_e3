@@ -10,7 +10,7 @@ class Search:
         """
         self.root = root
 
-    def get_best_move(self, simulation_number: int) -> int:
+    def find_best_move(self, simulation_number: int) -> int:
         """
         given that from root r, we can go to child c by doing action a,
         this function will return the best action to go to the calculated best child

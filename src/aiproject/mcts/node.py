@@ -20,7 +20,7 @@ class Node:
         `parent` is a reference to the parent node, that self is the child to.
             every node as a parent (except r) thats why it is typed as Otional
         """
-        self.board = board
+        self.board = board.copy()
         self.childrens = []
         self.parent = parent
         self._n = 0
