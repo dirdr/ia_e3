@@ -45,9 +45,7 @@ and increase the count of visits at each node.
 
 #### UCT
 The **Upper confidence Trees** (UCT) formula
-$$
-S_i = x_i + c \sqrt{\frac{ln(n)}{n_i}} 
-$$
+$$S_i = x_i + c \sqrt{\frac{ln(n)}{n_i}}$$  
 **Where**
 - $x_i$ is the mean of all the game passing through this node.
 In our case
