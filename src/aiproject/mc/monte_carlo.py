@@ -14,33 +14,20 @@ def simulate_random_game(board: np.ndarray, move_id: int) -> np.ndarray:
 
 
 @njit(parallel=True)
-def simulate_random_games_parallel(
+def simulate_random_games(
     board: np.ndarray, number_of_game: int, move_id: int
-) -> np.ndarray:
-    scores: np.ndarray = np.zeros(number_of_game, dtype=np.int8)
+) -> np.float32:
+    scores: np.ndarray = np.empty(number_of_game, dtype=np.int8)
     for game in prange(0, number_of_game):
         copied: np.ndarray = simulate_random_game(board, move_id)
         scores[game] = common.get_winner(
             copied
         )  # update the score for the game that just ended
-    return scores
+    return scores.mean()
 
 
 @njit
-def simulate_random_games(
-    board: np.ndarray, number_of_game: int, move_id: int
-) -> np.ndarray:
-    scores: np.ndarray = np.zeros(number_of_game, dtype=np.int8)
-    for game in range(0, number_of_game):
-        copied: np.ndarray = simulate_random_game(board, move_id)
-        scores[game] = common.get_winner(
-            copied
-        )  # update the score for the game that just ended
-    return scores
-
-
-@njit
-def find_best_move(board: np.ndarray, number_of_game: int, p=False) -> int:
+def find_best_move(board: np.ndarray, number_of_game: int) -> int:
     """
     simulate 'number_of_game' game per move for the two ia to chose the best move
     return the best move to play for the current ia
@@ -49,11 +36,8 @@ def find_best_move(board: np.ndarray, number_of_game: int, p=False) -> int:
     means: np.ndarray = np.zeros(possible_moves_count, dtype=np.float64)
     current_player: int = board[-3]
     for move_id in range(0, possible_moves_count):  # check all the possible move
-        if p:
-            scores = simulate_random_games_parallel(board, number_of_game, move_id)
-        else:
-            scores = simulate_random_games(board, number_of_game, move_id)
-        means[move_id] = scores.mean()
+        mean = simulate_random_games(board, number_of_game, move_id)
+        means[move_id] = mean
     if current_player == 1:
         return int(np.argmin(means))
     return int(np.argmax(means))

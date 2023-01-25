@@ -19,18 +19,8 @@ class Player(ABC):
         return f"{self.__class__.__name__}-{self.id}"
 
     @abstractmethod
-    def find_best_move(self, board: np.ndarray) -> int:
-        """
-        will find the best move for the current player and return it
-
-        return an encoded move_id
-        """
+    def play(self, board: np.ndarray) -> np.ndarray:
         pass
-
-    def play(self, board: np.ndarray) -> None:
-        move_id: int = self.find_best_move(board)
-        play_id: int = board[move_id]
-        common.play_one_turn(board, play_id)
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}-{self.id}"
@@ -42,8 +32,12 @@ class MonteCarloPlayer(Player):
         self.number_of_game_per_move = number_of_game_per_move
         self.parallel = p
 
-    def find_best_move(self, board: np.ndarray) -> int:
-        return mc.find_best_move(board, self.number_of_game_per_move, self.parallel)
+
+    def play(self, board: np.ndarray) -> np.ndarray:
+        move_id: int = mc.find_best_move(board, self.number_of_game_per_move)
+        play_id: int = board[move_id]
+        common.play_one_turn(board, play_id)
+        return board
 
 
 class MonteCarloTreeSearchPlayer(Player):
@@ -51,9 +45,8 @@ class MonteCarloTreeSearchPlayer(Player):
         super().__init__(id)
         self.rollout = rollout
 
-    def find_best_move(self, board: np.ndarray) -> int:
-        search: Search = Search(Node(board))
-        return search.find_best_move(self.rollout)
+    def play(self, board: np.ndarray) -> np.ndarray:
+        return Search(root=Node(board)).play(100)
 
 
 class Battle:
@@ -93,7 +86,7 @@ class Battle:
     def battle(self) -> None:
         board: np.ndarray = STARTING_BOARD.copy()
         while not common.is_over(board):
-            self.get_current_player_instance().play(board)
+            board = self.get_current_player_instance().play(board)
         result: int = common.get_winner(board)
         self.results[self.get_player_instance_by_result(result).get_keystring()] += 1
 

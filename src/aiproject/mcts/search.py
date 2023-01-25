@@ -1,3 +1,4 @@
+import numpy as np
 from typing import Optional
 from aiproject.mcts.node import Node
 
@@ -10,7 +11,7 @@ class Search:
         """
         self.root = root
 
-    def find_best_move(self, simulation_number: int) -> int:
+    def play(self, simulation_number: int) -> np.ndarray:
         """
         given that from root r, we can go to child c by doing action a,
         this function will return the best action to go to the calculated best child
@@ -20,7 +21,7 @@ class Search:
             to_simulate: Node = self._selection()
             simulation_result = to_simulate.simulate()
             to_simulate.backpropagate(simulation_result)
-        return 0
+        return self.root.find_best_child().board
 
 
     def _selection(self) -> Node:
