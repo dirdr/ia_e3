@@ -27,10 +27,9 @@ class Player(ABC):
 
 
 class MonteCarloPlayer(Player):
-    def __init__(self, id: int, number_of_game_per_move: int, p: bool = False) -> None:
+    def __init__(self, id: int, number_of_game_per_move: int) -> None:
         super().__init__(id)
         self.number_of_game_per_move = number_of_game_per_move
-        self.parallel = p
 
     def play(self, board: np.ndarray) -> np.ndarray:
         move_id: int = mc.find_best_move(board, self.number_of_game_per_move)
@@ -45,7 +44,7 @@ class MonteCarloTreeSearchPlayer(Player):
         self.rollout = rollout
 
     def play(self, board: np.ndarray) -> np.ndarray:
-        return Search(root=Node(board)).play(100)
+        return Search(root=Node(board)).play(self.rollout)
 
 
 class Battle:
@@ -64,7 +63,6 @@ class Battle:
         self.results = defaultdict(int)
 
     def get_current_player_instance(self) -> Player:
-        """"""
         if self.current_player == 0:
             return self.player_0
         return self.player_1
@@ -92,8 +90,8 @@ class Battle:
             board = self.get_current_player_instance().play(board)
             self.current_player = 1 - self.current_player
         result: int = common.get_winner(board)
+        print(result)
         self.results[self.get_player_instance_by_result(result).get_keystring()] += 1
 
     def get_result_pretty_string(self) -> str:
-        print(self.results)
         return f"{(self.results[self.player_0.get_keystring()] / self.number_of_match) * 100}% Win {self.player_0} - {(self.results[self.player_1.get_keystring()] / self.number_of_match) * 100}% Win {self.player_1}"

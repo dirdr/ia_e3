@@ -23,7 +23,6 @@ def simulate_random_games(
         scores[game] = common.get_winner(
             copied
         )  # update the score for the game that just ended
-    #print(scores)
     return scores.mean()
 
 

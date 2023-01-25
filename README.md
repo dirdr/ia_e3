@@ -53,6 +53,10 @@ In our case
 - $c$ is a a coefficient that allows us to adjust the balance between exploration and exploitation 
 - $n$ number of simulation passed by the parent node
 
+#### Handle two players
+![schema](./resources/schema.svg)  
+
 ### References
-[article that describe mcts steps](https://towardsdatascience.com/monte-carlo-tree-search-in-reinforcement-learning-b97d3e743d0f)
-[MCTS-Survey](http://www.incompleteideas.net/609%20dropbox/other%20readings%20and%20resources/MCTS-survey.pdf)
+[article that describe mcts steps](https://towardsdatascience.com/monte-carlo-tree-search-in-reinforcement-learning-b97d3e743d0f)  
+[MCTS-Survey](http://www.incompleteideas.net/609%20dropbox/other%20readings%20and%20resources/MCTS-survey.pdf)  
+[blog about mcts](https://jyopari.github.io/MCTS.html

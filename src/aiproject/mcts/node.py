@@ -20,22 +20,29 @@ class Node:
             reaching to a new node
         `parent` is a reference to the parent node, that self is the child to.
             every node as a parent (except r) thats why it is typed as Otional
+        `_result` is a defaultdict (1: number of win for player 0, -1: player_1: number of win for player 1)
         """
         self.board = board.copy()
         self.childrens = []
         self.parent = parent
         self._n = 0
-        self._result = defaultdict(int) # store the number of win and lose 
+        self._results = defaultdict(int)  # store the number of win and lose
         self._untried_action = None
 
     @property
-    def x_value(self) -> int:
-        "return the mean of all game that passed through this node"
-        return 0
-
-    @property
-    def n(self):
-        return self._n
+    def x_value(self) -> float:
+        """
+        get the averege win value for a node
+        looking at the parent node to know which score to choose
+        (player 0 win => 1)
+        (player 1 win => -1)
+        """
+        if self.parent is None:
+            raise RuntimeError("trying to acces things wrong!")
+        wins: int = (
+            self._results[1] if self.parent.board[-3] == 0 else self._results[-1]
+        )
+        return wins / self._n
 
     @property
     def untried_action(self):
@@ -52,9 +59,9 @@ class Node:
 
     def can_expand(self) -> bool:
         """
-            return true if the current node can have child s_i by consuming a_i
+        return true if the current node can have child s_i by consuming a_i
         """
-        return len(self.untried_action) == 0
+        return len(self.untried_action) != 0
 
     def expand(self) -> Self:
         """
@@ -71,26 +78,29 @@ class Node:
 
     def find_best_child(self, c: Optional[float] = 0.2) -> Self:
         """
+        for `self` Node
         find and return the best child node according to the UCT formula
 
         @param c -> the balance factor, the value is set by default as 0.2
         """
-        weights: list[float] = [] 
-        modifier: int = 0
+        weights: list[float] = []
         if self.board[-3] == 0:
             modifier = 1
-        else:   
+        else:
             modifier = -1
         for children in self.childrens:
-            weights.append(
-                modifier * (children.x_value / children.n)
-                + c * np.sqrt((np.log(self.n) / children.n))
-            )
+            if children._n == 0:
+                weights.append(float("inf"))
+            else:
+                weights.append(
+                    modifier * (children.x_value / children._n)
+                    + c * np.sqrt((np.log(self._n) / children._n))
+                )
         return self.childrens[np.argmax(weights)]
 
     def simulate(self) -> int:
         """
-        simulate a game from the current node (self) 
+        simulate a game from the current node (self)
         the gme will be played with a random policy
         """
         simulation_board = self.board.copy()
@@ -103,6 +113,6 @@ class Node:
         updating the number of time the node has been visited and the result.
         """
         self._n += 1
-        self._result[result] += 1
+        self._results[result] += 1
         if self.parent:
             self.parent.backpropagate(result)
