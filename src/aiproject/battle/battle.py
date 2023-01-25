@@ -32,7 +32,6 @@ class MonteCarloPlayer(Player):
         self.number_of_game_per_move = number_of_game_per_move
         self.parallel = p
 
-
     def play(self, board: np.ndarray) -> np.ndarray:
         move_id: int = mc.find_best_move(board, self.number_of_game_per_move)
         play_id: int = board[move_id]
@@ -65,6 +64,7 @@ class Battle:
         self.results = defaultdict(int)
 
     def get_current_player_instance(self) -> Player:
+        """"""
         if self.current_player == 0:
             return self.player_0
         return self.player_1
@@ -84,9 +84,13 @@ class Battle:
             self.battle()
 
     def battle(self) -> None:
+        """
+        play a full match between `player_0` and `player_1`
+        """
         board: np.ndarray = STARTING_BOARD.copy()
         while not common.is_over(board):
             board = self.get_current_player_instance().play(board)
+            self.current_player = 1 - self.current_player
         result: int = common.get_winner(board)
         self.results[self.get_player_instance_by_result(result).get_keystring()] += 1
 

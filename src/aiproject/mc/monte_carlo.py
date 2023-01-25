@@ -23,6 +23,7 @@ def simulate_random_games(
         scores[game] = common.get_winner(
             copied
         )  # update the score for the game that just ended
+    #print(scores)
     return scores.mean()
 
 
@@ -33,11 +34,10 @@ def find_best_move(board: np.ndarray, number_of_game: int) -> int:
     return the best move to play for the current ia
     """
     possible_moves_count: int = board[-1]
-    means: np.ndarray = np.zeros(possible_moves_count, dtype=np.float64)
+    means: np.ndarray = np.empty(possible_moves_count, dtype=np.float64)
     current_player: int = board[-3]
     for move_id in range(0, possible_moves_count):  # check all the possible move
-        mean = simulate_random_games(board, number_of_game, move_id)
-        means[move_id] = mean
+        means[move_id] = simulate_random_games(board, number_of_game, move_id)
     if current_player == 1:
         return int(np.argmin(means))
     return int(np.argmax(means))
