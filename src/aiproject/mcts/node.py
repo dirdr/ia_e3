@@ -1,5 +1,6 @@
 from collections import defaultdict
-from typing import Self, Optional
+from typing import Optional
+from typing_extensions import Self
 import numpy as np
 import aiproject.common.impl as common
 

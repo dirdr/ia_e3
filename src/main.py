@@ -1,11 +1,23 @@
-import numpy as np
-from aiproject.battle.AivsAi import MonteCarloPlayer, MonteCarloTreeSearchPlayer
-from aiproject.battle.battle import Player, Battle
+from aiproject.battle import battle as bt
+
 
 def main() -> None:
-    monte_carlo = MonteCarloPlayer()
-    monte_carlo_search = MonteCarloTreeSearchPlayer()
-    battle = Battle(monte_carlo, monte_carlo)
+    #battle_0 = bt.Battle(
+    #    bt.MonteCarloPlayer(id=0, number_of_game_per_move=100),
+    #    bt.MonteCarloPlayer(id=1, number_of_game_per_move=100),
+    #    number_of_match=20,
+    #)
+    #battle_0.full_battle()
+    #print(battle_0.get_result_pretty_string())
+    #print("\n")
+    battle_1 = bt.Battle(
+        bt.MonteCarloPlayer(id=0, number_of_game_per_move=100),
+        bt.MonteCarloTreeSearchPlayer(id=1, rollout=150),
+        number_of_match=20
+    )
+    battle_1.full_battle()
+    print(battle_1.get_result_pretty_string())
+
 
 if __name__ == "__main__":
     main()

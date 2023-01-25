@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from aiproject.mcts.node import Node
 from aiproject.mcts.search import Search
 import numpy as np
@@ -10,11 +11,15 @@ common._update_possible_moves(STARTING_BOARD, 0)
 
 
 class Player(ABC):
-    def __init__(self) -> None:
-        pass
+    def __init__(self, id: int) -> None:
+        self.id = id
+
+    def get_keystring(self) -> str:
+        """the player keystring is used to store result"""
+        return f"{self.__class__.__name__}-{self.id}"
 
     @abstractmethod
-    def find_best_move(self) -> int:
+    def find_best_move(self, board: np.ndarray) -> int:
         """
         will find the best move for the current player and return it
 
@@ -23,31 +28,32 @@ class Player(ABC):
         pass
 
     def play(self, board: np.ndarray) -> None:
-        move_id: int = self.find_best_move()
+        move_id: int = self.find_best_move(board)
         play_id: int = board[move_id]
         common.play_one_turn(board, play_id)
 
     def __str__(self) -> str:
-        return __class__.__name__
+        return f"{self.__class__.__name__}-{self.id}"
 
 
 class MonteCarloPlayer(Player):
-    def __init__(self, board: np.ndarray, number_of_game_per_move: int) -> None:
-        super().__init__()
-        self.board = board
+    def __init__(self, id: int, number_of_game_per_move: int, p: bool = False) -> None:
+        super().__init__(id)
         self.number_of_game_per_move = number_of_game_per_move
+        self.parallel = p
 
     def find_best_move(self, board: np.ndarray) -> int:
-        return mc.find_best_move(board, self.number_of_game_per_move, True)
+        return mc.find_best_move(board, self.number_of_game_per_move, self.parallel)
 
 
 class MonteCarloTreeSearchPlayer(Player):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, id: int, rollout: int = 50) -> None:
+        super().__init__(id)
+        self.rollout = rollout
 
     def find_best_move(self, board: np.ndarray) -> int:
         search: Search = Search(Node(board))
-        return search.find_best_move(10)
+        return search.find_best_move(self.rollout)
 
 
 class Battle:
@@ -63,7 +69,7 @@ class Battle:
         self.player_0 = player_0
         self.player_1 = player_1
         self.current_player = 0
-        self.results = {}
+        self.results = defaultdict(int)
 
     def get_current_player_instance(self) -> Player:
         if self.current_player == 0:
@@ -75,9 +81,22 @@ class Battle:
             return self.player_0
         return self.player_1
 
+    def get_player_id_by_result(self, result: int) -> int:
+        if result == 1:
+            return 0
+        return 1
+
+    def full_battle(self) -> None:
+        for _ in range(self.number_of_match):
+            self.battle()
+
     def battle(self) -> None:
-        board: np.ndarray = STARTING_BOARD
+        board: np.ndarray = STARTING_BOARD.copy()
         while not common.is_over(board):
             self.get_current_player_instance().play(board)
         result: int = common.get_winner(board)
-        self.results[str(self.get_player_instance_by_result(result))] += 1
+        self.results[self.get_player_instance_by_result(result).get_keystring()] += 1
+
+    def get_result_pretty_string(self) -> str:
+        print(self.results)
+        return f"{(self.results[self.player_0.get_keystring()] / self.number_of_match) * 100}% Win {self.player_0} - {(self.results[self.player_1.get_keystring()] / self.number_of_match) * 100}% Win {self.player_1}"
