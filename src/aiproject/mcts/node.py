@@ -84,16 +84,12 @@ class Node:
         @param c -> the balance factor, the value is set by default as 0.2
         """
         weights: list[float] = []
-        if self.board[-3] == 0:
-            modifier = 1
-        else:
-            modifier = -1
         for children in self.childrens:
             if children._n == 0:
                 weights.append(float("inf"))
             else:
                 weights.append(
-                    modifier * (children.x_value / children._n)
+                    (children.x_value / children._n)
                     + c * np.sqrt((np.log(self._n) / children._n))
                 )
         return self.childrens[np.argmax(weights)]
