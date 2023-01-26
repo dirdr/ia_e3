@@ -1,7 +1,7 @@
 import numpy as np
 import aiproject.common.impl as common
 
-DEBUG: bool = True
+DEBUG: bool = False
 
 def print_board(board):
     current_player: int = board[-3]
