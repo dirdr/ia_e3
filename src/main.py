@@ -12,7 +12,7 @@ def main() -> None:
     #print(battle_0.get_result_pretty_string())
     battle_1 = bt.Battle(
         bt.MonteCarloPlayer(id=0, number_of_game_per_move=10),
-        bt.MonteCarloTreeSearchPlayer(id=1, rollout=1000),
+        bt.MonteCarloTreeSearchPlayer(id=1, simulation_time_in_s=1),
         number_of_match=3,
     )
     battle_1.full_battle()

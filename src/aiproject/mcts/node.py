@@ -76,12 +76,12 @@ class Node:
         self.childrens.append(children)
         return children
 
-    def find_best_child(self, c: Optional[float] = 0.2) -> Self:
+    def find_best_child(self, c: Optional[float] = 0.1) -> Self:
         """
         for `self` Node
         find and return the best child node according to the UCT formula
 
-        @param c -> the balance factor, the value is set by default as 0.2
+        @param c -> the balance factor, the value is set by default as 0.1
         """
         weights: list[float] = []
         for children in self.childrens:

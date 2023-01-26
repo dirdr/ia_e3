@@ -43,14 +43,14 @@ class MonteCarloPlayer(Player):
 
 
 class MonteCarloTreeSearchPlayer(Player):
-    def __init__(self, id: int, rollout: int = 50) -> None:
+    def __init__(self, id: int, simulation_time_in_s: int = 1) -> None:
         super().__init__(id)
-        self.rollout = rollout
+        self.simulation_time_in_s = simulation_time_in_s
 
     def play(self, board: np.ndarray) -> np.ndarray:
         if u.DEBUG:
             print("Monte carlo tree search player")
-        return Search(root=Node(board)).play(self.rollout)
+        return Search(root=Node(board)).play(self.simulation_time_in_s)
 
 
 class Battle:

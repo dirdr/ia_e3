@@ -1,3 +1,4 @@
+import time
 import numpy as np
 from typing import Optional
 from aiproject.mcts.node import Node
@@ -11,16 +12,19 @@ class Search:
         """
         self.root = root
 
-    def play(self, simulation_number: int) -> np.ndarray:
+    def play(self, simulation_time_in_s: int) -> np.ndarray:
         """
         given that from root r, we can go to child c by doing action a,
         this function will return the best action to go to the calculated best child
         @param simulation_number -> number of rollout to go for before choosing the best child
         """
-        for _ in range(0, simulation_number):
+        end_time = time.time() + simulation_time_in_s * 1000
+        while True:
             to_simulate: Node = self._selection()
             simulation_result = to_simulate.simulate()
             to_simulate.backpropagate(simulation_result)
+            if time.time() > end_time:
+                break
         return self.root.find_best_child().board
 
 
