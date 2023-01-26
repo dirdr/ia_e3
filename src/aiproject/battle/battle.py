@@ -13,6 +13,11 @@ common._update_possible_moves(STARTING_BOARD, 0)
 
 
 class Player(ABC):
+    """
+    an implementation of the player abstract class MUST override the play method with the AI way of finding the move
+    the play method should return the board in the state s1 from s0 when a1 is played by the player
+    """
+
     def __init__(self, id: int) -> None:
         self.id = id
 
@@ -36,20 +41,16 @@ class MonteCarloPlayer(Player):
     def play(self, board: np.ndarray) -> np.ndarray:
         move_id: int = mc.find_best_move(board, self.number_of_game_per_move)
         play_id: int = board[move_id]
-        if u.DEBUG:
-            u.print_move_line(play_id)
         common.play_one_turn(board, play_id)
         return board
 
 
 class MonteCarloTreeSearchPlayer(Player):
-    def __init__(self, id: int, simulation_time_in_s: int = 1) -> None:
+    def __init__(self, id: int, simulation_time_in_s: float = 0.1) -> None:
         super().__init__(id)
         self.simulation_time_in_s = simulation_time_in_s
 
     def play(self, board: np.ndarray) -> np.ndarray:
-        if u.DEBUG:
-            print("Monte carlo tree search player")
         return Search(root=Node(board)).play(self.simulation_time_in_s)
 
 
@@ -57,6 +58,9 @@ class Battle:
     """
     the battle class is an interface for making battle between Ai:
         Monte carlo and Monte carlo tree search
+
+    when creating a Player,
+    id is not important for the game, its used to store games result and print them
     """
 
     def __init__(
@@ -74,11 +78,13 @@ class Battle:
         return self.player_1
 
     def get_player_instance_by_result(self, result: int) -> Player:
+        "by convention when player 0 win, the score is 1 and when player 1 win, score is -1"
         if result == 1:
             return self.player_0
         return self.player_1
 
     def get_player_id_by_result(self, result: int) -> int:
+        "by convention when player 0 win, the score is 1 and when player 1 win, score is -1"
         if result == 1:
             return 0
         return 1
@@ -86,8 +92,6 @@ class Battle:
     def full_battle(self) -> None:
         for _ in range(self.number_of_match):
             self.battle()
-            if u.DEBUG:
-                print("\n\n\n\n")
 
     def battle(self) -> None:
         """
@@ -96,8 +100,6 @@ class Battle:
         board: np.ndarray = STARTING_BOARD.copy()
         self.current_player = 0
         while not common.is_over(board):
-            if u.DEBUG:
-                u.print_board(board)
             board = self.get_current_player_instance().play(board)
             self.current_player = 1 - self.current_player
         result: int = common.get_winner(board)

@@ -10,10 +10,24 @@
 ##### [checkout source page for this project](https://perso.esiee.fr/~buzerl/IA/330%20Projet_3/ProjetIAetJeux.html)
 ##### [play domineering](https://staff.fim.uni-passau.de/kreuzer/Spielesammlung/Spielesammlung/Domineering/index.html)
 
-## MonteCarlo Algorithms
-In this first section, we wil introduce two differents monte carlo algorithms,
+### Run Instructions
+```
+$ git clone https://github.com/dirdr/ia_e3 && cd ia_e3
+$ python3 -m pip install -r "requirements.txt"
+$ python3 src/main.py
+```
 
-### Classic monte carlo 
+### Usage
+o create a battle, go to `src/main.py` and edit the main function
+create a battle object and pass two player.
+then call the `full_battle` method.
+the match result will be printed when the match is over
+
+### Classic Monte carlo
+The classic Monte-Carlo method can be broken down into   simple steps.  
+When it is time for the monte carlo agent to play a move,
+the algorithm will iterate through all avaibles moves and simulate $n$ games for each moves
+it will then select the move with the highest mean for all the simulations
 
 ### MCTS (Monte carlo tree search)
 
@@ -54,9 +68,15 @@ In our case
 - $n$ number of simulation passed by the parent node
 
 #### Handle two players
+Something to not forget when implementing the mcts algorithm for a two player game is **result switching**.  
+We can see in this schema that if the player 0 start to chose his move at root,
+then one layer under, it will be player 1 turn
+we try to maximise to opponent moves. so when selecting the best child for the opponent,
+we need to take our player looses (which is the opponent wins)
 ![schema](./resources/schema.svg)  
 
+
 ### References
-[article that describe mcts steps](https://towardsdatascience.com/monte-carlo-tree-search-in-reinforcement-learning-b97d3e743d0f)  
+[A really well written article that describe MCTS steps](https://towardsdatascience.com/monte-carlo-tree-search-in-reinforcement-learning-b97d3e743d0f)  
 [MCTS-Survey](http://www.incompleteideas.net/609%20dropbox/other%20readings%20and%20resources/MCTS-survey.pdf)  
-[blog about mcts](https://jyopari.github.io/MCTS.html
+[A nice blog post about MCTS](https://jyopari.github.io/MCTS.html)

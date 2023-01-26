@@ -3,6 +3,7 @@ import aiproject.common.impl as common
 
 DEBUG: bool = False
 
+
 def print_board(board):
     current_player: int = board[-3]
     print(f"Current player = {current_player}")
@@ -19,6 +20,7 @@ def print_board(board):
     for x in range(8):
         s += str(x) + str(x)
     print(s)
+
 
 def print_move_line(play_id: int) -> None:
     player, x, y = common.decode_play_id(play_id)

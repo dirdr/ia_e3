@@ -45,6 +45,10 @@ class Node:
         return wins / self._n
 
     @property
+    def n(self) -> int:
+        return self._n
+
+    @property
     def untried_action(self):
         if self._untried_action is None:
             self._untried_action = common.get_legal_actions(self.board)
@@ -85,12 +89,11 @@ class Node:
         """
         weights: list[float] = []
         for children in self.childrens:
-            if children._n == 0:
+            if children.n == 0:
                 weights.append(float("inf"))
             else:
                 weights.append(
-                    (children.x_value / children._n)
-                    + c * np.sqrt((np.log(self._n) / children._n))
+                    children.x_value + c * np.sqrt((np.log(self.n) / children.n))
                 )
         return self.childrens[np.argmax(weights)]
 
