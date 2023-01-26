@@ -95,7 +95,7 @@ def _update_possible_moves(board: np.ndarray, player_id: int) -> None:
 def play_one_turn(board: np.ndarray, play_id: int) -> None:
     """
     play one game turn
-    move id is the encoded move:
+    play is the encoded move:
         this include the player that played the move,
         the coordinate of the play
     """
@@ -103,9 +103,9 @@ def play_one_turn(board: np.ndarray, play_id: int) -> None:
     move_id: int = to_board_index(x_coordinate, y_coordinate)
     board[move_id] = 1
     if player_id == 0:
-        board[player_id + 8] = 1
+        board[move_id + 8] = 1
     else:
-        board[player_id + 1] = 1
+        board[move_id + 1] = 1
     next_player: int = 1 - player_id
     _update_possible_moves(board, next_player)
     board[-3] = next_player

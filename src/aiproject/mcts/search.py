@@ -21,7 +21,7 @@ class Search:
             to_simulate: Node = self._selection()
             simulation_result = to_simulate.simulate()
             to_simulate.backpropagate(simulation_result)
-        return self.root.find_best_child().board.copy()
+        return self.root.find_best_child().board
 
 
     def _selection(self) -> Node:

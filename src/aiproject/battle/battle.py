@@ -5,6 +5,8 @@ from aiproject.mcts.search import Search
 import numpy as np
 import aiproject.mc.monte_carlo as mc
 import aiproject.common.impl as common
+import aiproject.utils.util as u
+
 
 STARTING_BOARD = np.zeros(144, dtype=np.uint8)
 common._update_possible_moves(STARTING_BOARD, 0)
@@ -34,6 +36,7 @@ class MonteCarloPlayer(Player):
     def play(self, board: np.ndarray) -> np.ndarray:
         move_id: int = mc.find_best_move(board, self.number_of_game_per_move)
         play_id: int = board[move_id]
+        u.print_move_line(play_id)
         common.play_one_turn(board, play_id)
         return board
 
@@ -88,9 +91,11 @@ class Battle:
         board: np.ndarray = STARTING_BOARD.copy()
         while not common.is_over(board):
             board = self.get_current_player_instance().play(board)
+            if u.DEBUG:
+                u.print_board(board)
             self.current_player = 1 - self.current_player
         result: int = common.get_winner(board)
-        print(result)
+        #print(result)
         self.results[self.get_player_instance_by_result(result).get_keystring()] += 1
 
     def get_result_pretty_string(self) -> str:
