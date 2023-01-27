@@ -61,7 +61,7 @@ and increase the count of visits at each node.
 The **Upper confidence Trees** (UCT) formula
 $$S_i = x_i + c \sqrt{\frac{ln(n)}{n_i}}$$  
 **Where**
-- $x_i$ is the mean of all the game passing through this node.
+- $x_i$ is the mean of all the game passing through this node.  
 In our case
 - $n_i$ is the number of simulation that passed through this node
 - $c$ is a a coefficient that allows us to adjust the balance between exploration and exploitation 
