@@ -18,7 +18,7 @@ $ python3 src/main.py
 ```
 
 ### Usage
-o create a battle, go to `src/main.py` and edit the main function
+to create a battle, go to `src/main.py` and edit the main function
 create a battle object and pass two player.
 then call the `full_battle` method.
 the match result will be printed when the match is over
