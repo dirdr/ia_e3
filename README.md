@@ -3,8 +3,7 @@
 > "*The aim of this project is to present how a game AI, using deep learning tools
 > could win against the greatest chess or Go champions.
 > We will use a game that is easy to learn but with a high degree of combinatorics (**domineering**).
-> In this tutorial, we will build different generations of algorithms until we reach a method using deep learning.
-> At each step, a more powerful AI will be built.
+> In this tutorial, we will build different generations of algorithms 
 > You will set up a **competitive game mode** where you will compare the performance of this new AI against the old one.*"
 
 ##### [checkout source page for this project](https://perso.esiee.fr/~buzerl/IA/330%20Projet_3/ProjetIAetJeux.html)
@@ -61,8 +60,7 @@ and increase the count of visits at each node.
 The **Upper confidence Trees** (UCT) formula
 $$S_i = x_i + c \sqrt{\frac{ln(n)}{n_i}}$$  
 **Where**
-- $x_i$ is the mean of all the game passing through this node.  
-In our case
+- $x_i$ is the mean of all the game passing through this node.
 - $n_i$ is the number of simulation that passed through this node
 - $c$ is a a coefficient that allows us to adjust the balance between exploration and exploitation 
 - $n$ number of simulation passed by the parent node
