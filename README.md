@@ -11,7 +11,7 @@
 
 ### Run Instructions
 ```
-$ git clone https://github.com/dirdr/ia_e3 && cd ia_e3
+$ git clone https://github.com/dirdr/mcts_for_domineering && cd mcts_for_domineering
 $ python3 -m pip install -r "requirements.txt"
 $ python3 src/main.py
 ```
